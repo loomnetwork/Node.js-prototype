@@ -1,2 +1,2 @@
-# Node.js-prototype-
+# Node.js-prototype
 Node.js prototype
