@@ -34,8 +34,6 @@ async function loadExtdevAccount () {
   client.on('error', msg => {
     console.error('PlasmaChain connection error', msg)
   })
-  let pk = CryptoUtils.bytesToHex(privateKey)
-
 
   return {
     account: LocalAddress.fromPublicKey(publicKey).toString(),
@@ -61,6 +59,7 @@ function loadAdminCredentials () {
   const ethPrivateKey = fs.readFileSync(path.join(__dirname, './rinkeby-private-key'), 'utf-8')
   return {addr, ethPrivateKey}
 }
+
 async function approve(pubKey, str1, str2, address) {
   const { account, web3js, client, privateKey } = await loadExtdevAccount()
   const prototypeContract = await getPrototypeContract(web3js)
@@ -137,25 +136,18 @@ async function recover(hash,r,s,v) {
 
 }
 program
-    .command('approve <pubKey> <str1> <str2> <address>')
-    .description('Expects the following parameters: pubKey, str1, str2, address')
-    .action(async function (pubKey, str1, str2, address) {
-      await approve(pubKey, str1, str2, address)
-    });
+  .command('approve <pubKey> <str1> <str2> <address>')
+  .description('Expects the following parameters: pubKey, str1, str2, address')
+  .action(async function (pubKey, str1, str2, address) {
+    await approve(pubKey, str1, str2, address)
+  });
 
-    program
-    .command('getData <hash>')
-    .description('Expects the following parameters: hash')
-    .action(async function (hash) {
-      await getData(hash)
-    });
-
-    program
-    .command('recover <hash> <r> <s> <v>')
-    .description('Expects the following parameters: hash, r, s, v')
-    .action(async function (hash,r,s,v) {
-      await recover(hash,r,s,v)
-    });
+program
+  .command('getData <hash>')
+  .description('Expects the following parameters: hash')
+  .action(async function (hash) {
+    await getData(hash)
+});
 
 
 program.parse(process.argv);
