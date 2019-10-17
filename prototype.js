@@ -3,8 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const Web3 = require('web3')
 const keccak256 = require('keccak256')
-const ethutil = require('ethereumjs-util')
-
+const { fromRpcSig } = require('ethereumjs-util')
 const {
   Client,
   NonceTxMiddleware,
@@ -12,6 +11,7 @@ const {
   LocalAddress,
   CryptoUtils,
   LoomProvider,
+  soliditySha3
 } = require('loom-js')
 
 const PrototypeContractjJSON = require('./build/contracts/Prototype.json')
@@ -56,23 +56,15 @@ async function approve(pubKey, str1, str2, address) {
   const { account, web3js, client } = await loadExtdevAccount()
   const prototypeContract = await getPrototypeContract(web3js)
   
-  const hash = buildHash(pubKey, str1, str2, address)
-  const signature = await web3js.eth.sign(hash, account)
-  console.log('Signature: ' + signature)
+  const keccak = buildHash(pubKey, str1, str2, address)
 
-  /*
-  r = signature.substr(0, 66)
-  s = '0x' + signature.substr(66, 64)
-  v = '0x' + signature.substr(130, 2)
-  */
-  let sig = signature.slice(2)
-  let r = ethutil.toBuffer('0x' + sig.substring(0, 64))
-  let s = ethutil.toBuffer('0x' + sig.substring(64, 128))
-  let v = ethutil.toBuffer(parseInt(sig.substring(128, 130), 16) + 27)
+  const result = await web3js.eth.sign(keccak, account)
+  const hash = soliditySha3('\x19Ethereum Signed Message:\n32', keccak).slice(2)
+  const { r, s, v } = fromRpcSig(result)
 
   try {
     const tx = await prototypeContract.methods
-      .approve(pubKey, str1, str2, address, hash, r, s, v, sig)
+      .approve(pubKey, str1, str2, address, hash, r, s, v, '0x' + hash)
       .send({ from: account})
     console.log(tx)
     console.log('Signer address: '+ tx.events.NewDataAdded.returnValues.signer)
