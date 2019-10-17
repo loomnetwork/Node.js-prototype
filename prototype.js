@@ -41,7 +41,6 @@ async function loadExtdevAccount () {
     account: LocalAddress.fromPublicKey(publicKey).toString(),
     web3js: new Web3(new LoomProvider(client, privateKey)),
     client,
-    privateKey: pk
   }
 }
 async function getPrototypeContract (web3js) {
@@ -53,13 +52,7 @@ async function getPrototypeContract (web3js) {
 }
 
 function buildHash(ethers, pubKey, str1, str2, address) {
-  
-  const buffer = pubKey + str1 + str2 + address
-  // return keccak256(buffer).toString('hex')
-  // return web3js.utils.soliditySha3(pubKey, str1, str2, address)
-
   let result = ethers.utils.solidityKeccak256([ 'string', 'string', 'string', 'address' ], [ pubKey, str1, str2, address ]);
-  console.log(result);
   return result
 }
 
@@ -70,7 +63,6 @@ async function approve(pubKey, str1, str2, address) {
   
   const hash = buildHash(ethers, pubKey, str1, str2, address)
   console.log("hash:", hash);
-  // console.log('account.privateKey: ' + privateKey)
   
   let addr = '0xC4247A24E4356FA34475799d9e64719e5307146c'
   let ethPrivateKey = '0xA6E4AF5B2B8323E965876D94D9CE635723A8A7193E61000D241CDDEAA613F3E4'
@@ -138,11 +130,6 @@ async function recove(hash,r,s,v) {
     const tx = await prototypeContract.methods
     .recove(hash,r,s,v)
     .call({ from: account})
-    const admin = await prototypeContract.methods
-    .ADMIN()
-    .call({ from: account})
-    console.log("admin",admin);
-    
     return tx
   } catch (err) {
     console.log('Error encountered while retrieving data.')
