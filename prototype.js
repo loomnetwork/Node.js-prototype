@@ -2,6 +2,8 @@ const program = require('commander')
 const fs = require('fs')
 const path = require('path')
 const Web3 = require('web3')
+const keccak256 = require('keccak256')
+
 const {
   Client,
   NonceTxMiddleware,
@@ -18,7 +20,6 @@ async function loadExtdevAccount () {
   const privateKeyStr = fs.readFileSync(path.join(__dirname, './signer-private-key'), 'utf-8')
   const privateKey = CryptoUtils.B64ToUint8Array(privateKeyStr)
   const publicKey = CryptoUtils.publicKeyFromPrivateKey(privateKey)
-  console.log(publicKey.toString())
   const client = new Client(
     extdevChainId,
     'wss://extdev-plasma-us1.dappchains.com/websocket',
@@ -31,7 +32,6 @@ async function loadExtdevAccount () {
   client.on('error', msg => {
     console.error('PlasmaChain connection error', msg)
   })
-  console.log(LocalAddress.fromPublicKey(publicKey).toString())
   return {
     account: LocalAddress.fromPublicKey(publicKey).toString(),
     web3js: new Web3(new LoomProvider(client, privateKey)),
@@ -46,12 +46,69 @@ async function getPrototypeContract (web3js) {
   )
 }
 
-async function approve() {
+function buildHash(pubKey, str1, str2, address) {
+  const buffer = pubKey + str1 + str2 + address
+  return keccak256(buffer).toString('hex')
+}
+async function approve(pubKey, str1, str2, address) {
   const { account, web3js, client } = await loadExtdevAccount()
   const prototypeContract = await getPrototypeContract(web3js)
+  const hash = buildHash(pubKey, str1, str2, address)
 
-  client.disconnect()
+  try {
+    const tx = await prototypeContract.methods
+      .approve(pubKey, str1, str2, address, hash)
+      .send({ from: account})
+    console.log('Signer address: '+ tx.events.NewDataAdded.returnValues.signer)
+    console.log('PubKey: ' + tx.events.NewDataAdded.returnValues.pubKey)
+    console.log('Str1: ' + tx.events.NewDataAdded.returnValues.str1)
+    console.log('Str2: ' + tx.events.NewDataAdded.returnValues.str2)
+    console.log('Address: ' + tx.events.NewDataAdded.returnValues.addr)
+    console.log('Hash: ' + tx.events.NewDataAdded.returnValues.hash)
+  } catch (err) {
+    console.log('Error encountered while saving data.')
+    throw (err)
+  } finally {
+    if (client) {
+      client.disconnect()
+    }
+  }
 }
 
+async function getData(hash) {
+  const { account, web3js, client } = await loadExtdevAccount()
+  const prototypeContract = await getPrototypeContract(web3js)
+  try {
+    const tx = await prototypeContract.methods
+    .getData(hash)
+    .call({ from: account})
+    console.log('PubKey: ' + tx.pubKey)
+    console.log('Str1: ' + tx.str1)
+    console.log('Str2: ' + tx.str2)
+    console.log('Address:' + tx.addr)
+  } catch (err) {
+    console.log('Error encountered while retrieving data.')
+    throw (err)
+  } finally {
+    if (client) {
+      client.disconnect()
+    }
+  }
 
-approve( )
+}
+program
+    .command('approve <pubKey> <str1> <str2> <address>')
+    .description('Expects the following parameters: pubKey, str1, str2, address')
+    .action(async function (pubKey, str1, str2, address) {
+      await approve(pubKey, str1, str2, address)
+    });
+
+    program
+    .command('getData <hash>')
+    .description('Expects the following parameters: hash')
+    .action(async function (hash) {
+      await getData(hash)
+    });
+
+
+program.parse(process.argv);

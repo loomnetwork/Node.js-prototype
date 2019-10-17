@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "gen:deployer-private-key": "node scripts/gen-pk.js deployer-private-key",
-    "gen:signer-private-key": "node scripts/gen-pk.js signer-private-key",
-    "migrate:testnet": "npx truffle migrate --network extdev"
+    "gen-keys:deployer": "node scripts/gen-keys.js deployer",
+    "gen-keys:signer": "node scripts/gen-keys.js signer",
+    "migrate:testnet": "npx truffle migrate --network extdev",
+    "migrate-reset:testnet": "npx truffle migrate --network extdev --reset"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,7 @@
   "dependencies": {
     "commander": "^3.0.2",
     "fs": "0.0.1-security",
+    "keccak256": "^1.0.0",
     "loom-js": "^1.55.0",
     "loom-truffle-provider": "^0.13.0",
     "openzeppelin-solidity": "^2.3.0",
