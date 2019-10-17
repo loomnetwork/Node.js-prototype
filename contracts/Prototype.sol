@@ -10,8 +10,11 @@ contract Prototype {
   }
 
   event NewDataAdded(address signer, string pubKey, string str1, string str2, address addr, bytes32 hash);
-
   mapping (bytes32 => Data) myData;
+
+  // constructor(address _admin) {
+    
+  // }
 
 
   function approve (string memory _pubKey, string memory _str1, string memory _str2, address _addr, bytes32 _hash) public {
@@ -21,7 +24,12 @@ contract Prototype {
   }
 
   function approve (string memory _pubKey, string memory _str1, string memory _str2, address _addr, bytes32 _hash, bytes32 r, bytes32 s, uint8 v) public {
-    // require(ecrecover(_hash, v, r, s) == msg.sender, "Invalid signature");
+    require(keccak256(abi.encodePacked(
+            _pubKey,
+            _str1,
+            _str2,
+            _addr)) == _hash, "Hash mismatch");
+    require(ecrecover(_hash, v, r, s) == msg.sender, "Invalid signature");
     require(myData[_hash].isSet == false, "Key already exists!");
     myData[_hash] = Data(_pubKey, _str1, _str2, _addr, true);
     emit NewDataAdded(msg.sender, _pubKey, _str1, _str2, _addr, _hash);
@@ -36,7 +44,12 @@ contract Prototype {
     addr = retVal.addr;
    }
 
-  function recove(bytes32 _hash, bytes32 r, bytes32 s, uint8 v) public returns (address sign) {
+  function recove(bytes32 _hash, bytes32 r, bytes32 s, uint8 v) public view returns (address sign, bytes32 oh, bytes32 or, bytes32 os, uint8 ov ) {
+    // hashx = keccak256(abi.encode('\x19Ethereum Signed Message:\n32', _hash));
     sign = ecrecover(_hash, v, r, s);
+    oh = _hash;
+    or = r;
+    os = s;
+    ov = v;
   }
 }

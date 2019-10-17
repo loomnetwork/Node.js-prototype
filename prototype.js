@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const Web3 = require('web3')
 const keccak256 = require('keccak256')
+const ethers = require('ethers')
 
 const {
   Client,
@@ -29,13 +30,18 @@ async function loadExtdevAccount () {
     new NonceTxMiddleware(publicKey, client),
     new SignedTxMiddleware(privateKey)
   ]
+  
   client.on('error', msg => {
     console.error('PlasmaChain connection error', msg)
   })
+  let pk = CryptoUtils.bytesToHex(privateKey)
+
+
   return {
     account: LocalAddress.fromPublicKey(publicKey).toString(),
     web3js: new Web3(new LoomProvider(client, privateKey)),
-    client
+    client,
+    privateKey: pk
   }
 }
 async function getPrototypeContract (web3js) {
@@ -46,26 +52,50 @@ async function getPrototypeContract (web3js) {
   )
 }
 
-function buildHash(pubKey, str1, str2, address) {
+function buildHash(ethers, pubKey, str1, str2, address) {
+  
   const buffer = pubKey + str1 + str2 + address
-  return keccak256(buffer).toString('hex')
+  // return keccak256(buffer).toString('hex')
+  // return web3js.utils.soliditySha3(pubKey, str1, str2, address)
+
+  let result = ethers.utils.solidityKeccak256([ 'string', 'string', 'string', 'address' ], [ pubKey, str1, str2, address ]);
+  console.log(result);
+  return result
 }
 
 async function approve(pubKey, str1, str2, address) {
-  const { account, web3js, client } = await loadExtdevAccount()
+  const { account, web3js, client, privateKey } = await loadExtdevAccount()
   const prototypeContract = await getPrototypeContract(web3js)
+  console.log("account...",account);
   
-  const hash = buildHash(pubKey, str1, str2, address)
-  const signature = await web3js.eth.sign(hash, account)
+  const hash = buildHash(ethers, pubKey, str1, str2, address)
+  console.log("hash:", hash);
+  // console.log('account.privateKey: ' + privateKey)
+  
+  let addr = '0xC4247A24E4356FA34475799d9e64719e5307146c'
+  let ethPrivateKey = '0xA6E4AF5B2B8323E965876D94D9CE635723A8A7193E61000D241CDDEAA613F3E4'
+  const ethWallet = new ethers.Wallet(ethPrivateKey);
+  let addrs = await ethWallet.getAddress()
+  console.log("addrs", addrs);
+  
+  const signature = await ethWallet.signMessage(hash);
+  let signedHash = ethers.utils.hashMessage(hash)
+  console.log("signedHash",signedHash);
   console.log('Signature: ' + signature)
-  let r = signature.substr(0, 66)
-  let s = '0x' + signature.substr(66, 64)
-  let v = '0x' + signature.substr(130, 2)
+  let r = signature.slice(0, 66)
+  let s = '0x' + signature.slice(66, 130)
+  let v = '0x' + signature.slice(130, 132)
 
-  console.log("account", account);
-  console.log("r", r);
-  console.log("s", s);
-  console.log("v", v);
+  let results = ethers.utils.splitSignature(signature)
+  console.log("results",results);
+  console.log("results.r",results.r);
+  console.log("results.s",results.s);
+  console.log("results.v",results.v);
+
+  
+  let addressSigner2 = await recove(signedHash, results.r, results.s, results.v)
+  console.log("get this addressSigner2 from signedHash ...", addressSigner2);
+  console.log("we're using this addrs.._emitContractEvent.", addrs);
   
   try {
     const tx = await prototypeContract.methods
@@ -117,7 +147,7 @@ async function recove(hash,r,s,v) {
     const tx = await prototypeContract.methods
     .recove(hash,r,s,v)
     .call({ from: account})
-    console.log("tx", tx);
+    return tx
   } catch (err) {
     console.log('Error encountered while retrieving data.')
     throw (err)
