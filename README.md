@@ -13,35 +13,22 @@ npm install
 npm run gen-keys:deployer
 ```
 
-## 3. Deploy the contract
+## 3. Setup the admin account
+
+* 3.1 Save your Rinkeby private key into the `rinkeby-private-key` file.
+
+* 3.2 Save your Rinkeby address into the `rinkeby-account` file
+
+* Update `adminAddress` in `./migrations/2_prototype.js` to math the value saved into the `rinkeby-account` file.
+
+## 4. Deploy the contract
 
 ```bash
 npm run migrate:testnet
 ```
 
-## 4. Generate signer keys
 
-```bash
-npm run gen-keys:signer
-```
-
-## 5. Print the signer public key
-
-```bash
-cat signer-public-key
-```
-
-## 6. Generate test account
-
-Here's how you can generate a test account:
-
-```bash
-node scripts/gen-keys.js test
-```
-
-This will create three files: `test-private-key`, `test-public-key`, and `test-account`.
-
-## 7. Call approve
+## 5. Call approve
 
 ```bash
 node prototype.js approve <publicKey> <str1> <str2> <address>
@@ -60,7 +47,7 @@ Address: 0x653bCF82B202dBAAc4fDCee8266fC7a93cB26539
 Hash: 89e50bd8ad3da87b3098ea03490e8f8608339575c7da8878f684697372e40629
 ```
 
-## 8. Get data
+## 6. Get data
 
 ```bash
 node prototype.js getData <hash>
