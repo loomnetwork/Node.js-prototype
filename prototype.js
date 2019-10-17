@@ -50,15 +50,25 @@ function buildHash(pubKey, str1, str2, address) {
   const buffer = pubKey + str1 + str2 + address
   return keccak256(buffer).toString('hex')
 }
+
 async function approve(pubKey, str1, str2, address) {
   const { account, web3js, client } = await loadExtdevAccount()
   const prototypeContract = await getPrototypeContract(web3js)
+  
   const hash = buildHash(pubKey, str1, str2, address)
+  const signature = await web3js.eth.sign(hash, account)
+  console.log('Signature: ' + signature)
+
+  r = signature.substr(0, 66)
+  s = '0x' + signature.substr(66, 64)
+  v = '0x' + signature.substr(130, 2)
+
 
   try {
     const tx = await prototypeContract.methods
-      .approve(pubKey, str1, str2, address, hash)
+      .approve(pubKey, str1, str2, address, hash, r, s, v, signature)
       .send({ from: account})
+
     console.log('Signer address: '+ tx.events.NewDataAdded.returnValues.signer)
     console.log('PubKey: ' + tx.events.NewDataAdded.returnValues.pubKey)
     console.log('Str1: ' + tx.events.NewDataAdded.returnValues.str1)
