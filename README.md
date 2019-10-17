@@ -19,7 +19,7 @@ npm run gen-keys:deployer
 
 * 3.2 Save your Rinkeby address into the `rinkeby-account` file
 
-* Update `adminAddress` in `./migrations/2_prototype.js` to math the value saved into the `rinkeby-account` file.
+* 3.3 Update `adminAddress` in `./migrations/2_prototype.js` to math the value saved into the `rinkeby-account` file.
 
 ## 4. Deploy the contract
 
