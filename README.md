@@ -25,13 +25,15 @@ npm run migrate:testnet
 npm run gen-keys:signer
 ```
 
-## 5. Print singer public key
+## 5. Print the signer public key
 
 ```bash
 cat signer-public-key
 ```
 
 ## 6. Generate test account
+
+Here's how you can generate a test account:
 
 ```bash
 node scripts/gen-keys.js test
