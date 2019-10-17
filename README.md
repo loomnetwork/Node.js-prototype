@@ -31,7 +31,7 @@ npm run gen-keys:signer
 cat signer-publick-key
 ```
 
-# 6. Generate test account
+## 6. Generate test account
 
 ```bash
 node scripts/gen-keys.js test
@@ -39,7 +39,7 @@ node scripts/gen-keys.js test
 
 This will create three files: `test-private-key`, `test-public-key`, and `test-account`.
 
-## 6. Call approve
+## 7. Call approve
 
 ```bash
 node prototype.js approve <publicKey> <str1> <str2> <address>
