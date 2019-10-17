@@ -39,11 +39,7 @@ contract Prototype {
     addr = retVal.addr;
    }
 
-  function recove(bytes32 _hash, bytes32 r, bytes32 s, uint8 v) public view returns (address sign, bytes32 oh, bytes32 or, bytes32 os, uint8 ov ) {
+  function recover(bytes32 _hash, bytes32 r, bytes32 s, uint8 v) public view returns (address sign, bytes32 oh, bytes32 or, bytes32 os, uint8 ov ) {
     sign = ecrecover(_hash, v, r, s);
-    oh = _hash;
-    or = r;
-    os = s;
-    ov = v;
   }
 }

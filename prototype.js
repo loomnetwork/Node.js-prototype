@@ -118,12 +118,12 @@ async function getData(hash) {
 
 }
 
-async function recove(hash,r,s,v) {
+async function recover(hash,r,s,v) {
   const { account, web3js, client } = await loadExtdevAccount()
   const prototypeContract = await getPrototypeContract(web3js)
   try {
     const tx = await prototypeContract.methods
-    .recove(hash,r,s,v)
+    .recover(hash,r,s,v)
     .call({ from: account})
     return tx
   } catch (err) {
@@ -151,10 +151,10 @@ program
     });
 
     program
-    .command('recove <hash> <r> <s> <v>')
+    .command('recover <hash> <r> <s> <v>')
     .description('Expects the following parameters: hash, r, s, v')
     .action(async function (hash,r,s,v) {
-      await recove(hash,r,s,v)
+      await recover(hash,r,s,v)
     });
 
 
