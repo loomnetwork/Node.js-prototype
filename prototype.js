@@ -56,6 +56,11 @@ function buildHash(ethers, pubKey, str1, str2, address) {
   return result
 }
 
+function loadAdminCredentials () {
+  const addr = fs.readFileSync(path.join(__dirname, './rinkeby-account'), 'utf-8')
+  const ethPrivateKey = fs.readFileSync(path.join(__dirname, './rinkeby-private-key'), 'utf-8')
+  return {addr, ethPrivateKey}
+}
 async function approve(pubKey, str1, str2, address) {
   const { account, web3js, client, privateKey } = await loadExtdevAccount()
   const prototypeContract = await getPrototypeContract(web3js)
@@ -64,8 +69,8 @@ async function approve(pubKey, str1, str2, address) {
   const hash = buildHash(ethers, pubKey, str1, str2, address)
   console.log("hash:", hash);
   
-  let addr = '0xC4247A24E4356FA34475799d9e64719e5307146c'
-  let ethPrivateKey = '0xA6E4AF5B2B8323E965876D94D9CE635723A8A7193E61000D241CDDEAA613F3E4'
+  const { addr, ethPrivateKey } = loadAdminCredentials()
+
   const ethWallet = new ethers.Wallet(ethPrivateKey);
   let addrs = await ethWallet.getAddress()
   console.log("addrs", addrs);
@@ -85,7 +90,7 @@ async function approve(pubKey, str1, str2, address) {
       .approve(pubKey, str1, str2, address, signedHash, splitResults.r, splitResults.s, splitResults.v)
       .send({ from: account})
 
-    console.log('Signer address: '+ tx.events.NewDataAdded.returnValues.signer)
+    console.log('Admin address (Rinkeby): '+ tx.events.NewDataAdded.returnValues.signer)
     console.log('PubKey: ' + tx.events.NewDataAdded.returnValues.pubKey)
     console.log('Str1: ' + tx.events.NewDataAdded.returnValues.str1)
     console.log('Str2: ' + tx.events.NewDataAdded.returnValues.str2)
