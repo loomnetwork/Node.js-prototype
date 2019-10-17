@@ -28,7 +28,7 @@ npm run gen-keys:signer
 ## 5. Print singer public key
 
 ```bash
-cat signer-publick-key
+cat signer-public-key
 ```
 
 ## 6. Generate test account
