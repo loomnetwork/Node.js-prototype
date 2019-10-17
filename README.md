@@ -61,7 +61,7 @@ Hash: 89e50bd8ad3da87b3098ea03490e8f8608339575c7da8878f684697372e40629
 
 ```bash
 node prototype.js getData <hash>
-``
+```
 
 Example:
 
