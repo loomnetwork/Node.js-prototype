@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const Web3 = require('web3')
 const keccak256 = require('keccak256')
+const ethutil = require('ethereumjs-util')
 
 const {
   Client,
@@ -59,16 +60,21 @@ async function approve(pubKey, str1, str2, address) {
   const signature = await web3js.eth.sign(hash, account)
   console.log('Signature: ' + signature)
 
+  /*
   r = signature.substr(0, 66)
   s = '0x' + signature.substr(66, 64)
   v = '0x' + signature.substr(130, 2)
-
+  */
+  let sig = signature.slice(2)
+  let r = ethutil.toBuffer('0x' + sig.substring(0, 64))
+  let s = ethutil.toBuffer('0x' + sig.substring(64, 128))
+  let v = ethutil.toBuffer(parseInt(sig.substring(128, 130), 16) + 27)
 
   try {
     const tx = await prototypeContract.methods
-      .approve(pubKey, str1, str2, address, hash, r, s, v, signature)
+      .approve(pubKey, str1, str2, address, hash, r, s, v, sig)
       .send({ from: account})
-
+    console.log(tx)
     console.log('Signer address: '+ tx.events.NewDataAdded.returnValues.signer)
     console.log('PubKey: ' + tx.events.NewDataAdded.returnValues.pubKey)
     console.log('Str1: ' + tx.events.NewDataAdded.returnValues.str1)
