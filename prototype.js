@@ -86,20 +86,11 @@ async function approve(pubKey, str1, str2, address) {
   let s = '0x' + signature.slice(66, 130)
   let v = '0x' + signature.slice(130, 132)
 
-  let results = ethers.utils.splitSignature(signature)
-  console.log("results",results);
-  console.log("results.r",results.r);
-  console.log("results.s",results.s);
-  console.log("results.v",results.v);
-
-  
-  let addressSigner2 = await recove(signedHash, results.r, results.s, results.v)
-  console.log("get this addressSigner2 from signedHash ...", addressSigner2);
-  console.log("we're using this addrs.._emitContractEvent.", addrs);
+  let splitResults = ethers.utils.splitSignature(signature)
   
   try {
     const tx = await prototypeContract.methods
-      .approve(pubKey, str1, str2, address, hash, r, s, v)
+      .approve(pubKey, str1, str2, address, signedHash, splitResults.r, splitResults.s, splitResults.v)
       .send({ from: account})
 
     console.log('Signer address: '+ tx.events.NewDataAdded.returnValues.signer)
@@ -147,6 +138,11 @@ async function recove(hash,r,s,v) {
     const tx = await prototypeContract.methods
     .recove(hash,r,s,v)
     .call({ from: account})
+    const admin = await prototypeContract.methods
+    .ADMIN()
+    .call({ from: account})
+    console.log("admin",admin);
+    
     return tx
   } catch (err) {
     console.log('Error encountered while retrieving data.')
