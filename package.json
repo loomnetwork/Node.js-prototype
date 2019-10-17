@@ -1,0 +1,32 @@
+{
+  "name": "node.js-prototype",
+  "version": "1.0.0",
+  "description": "Node.js Prototype",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gen:deployer-private-key": "node scripts/gen-pk.js deployer-private-key",
+    "gen:signer-private-key": "node scripts/gen-pk.js signer-private-key",
+    "migrate:testnet": "npx truffle migrate --network extdev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/loomnetwork/Node.js-prototype.git"
+  },
+  "author": "Loom Network Inc.",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/loomnetwork/Node.js-prototype/issues"
+  },
+  "homepage": "https://github.com/loomnetwork/Node.js-prototype#readme",
+  "dependencies": {
+    "commander": "^3.0.2",
+    "fs": "0.0.1-security",
+    "loom-js": "^1.55.0",
+    "loom-truffle-provider": "^0.13.0",
+    "openzeppelin-solidity": "^2.3.0",
+    "path": "^0.12.7",
+    "truffle": "^5.0.40",
+    "web3": "^1.2.1"
+  }
+}
