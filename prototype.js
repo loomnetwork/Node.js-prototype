@@ -91,6 +91,25 @@ async function approve(pubKey, str1, str2, address) {
   }
 }
 
+async function recover(hash,r,s,v) {
+  const { account, web3js, client } = await loadExtdevAccount()
+  const prototypeContract = await getPrototypeContract(web3js)
+  try {
+    const tx = await prototypeContract.methods
+    .recove(hash,r,s,v)
+    .call({ from: account})
+    console.log("tx", tx);
+  } catch (err) {
+    console.log('Error encountered while retrieving data.')
+    throw (err)
+  } finally {
+    if (client) {
+      client.disconnect()
+    }
+  }
+
+}
+
 async function getData(hash) {
   const { account, web3js, client } = await loadExtdevAccount()
   const prototypeContract = await getPrototypeContract(web3js)
@@ -126,5 +145,11 @@ program
       await getData(hash)
     });
 
+program
+  .command('recove <hash> <r> <s> <v>')
+  .description('Expects the following parameters: hash, r, s, v')
+  .action(async function (hash,r,s,v) {
+    await recover(hash,r,s,v)
+});
 
 program.parse(process.argv);

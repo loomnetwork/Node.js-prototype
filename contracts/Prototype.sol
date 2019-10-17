@@ -39,4 +39,9 @@ contract Prototype {
     str2 = retVal.str2;
     addr = retVal.addr;
    }
+
+   function recover(bytes32 _hash, bytes32 r, bytes32 s, uint8 v) public returns (address sign) {
+    sign = ecrecover(_hash, v, r, s);
+  }
+
 }
