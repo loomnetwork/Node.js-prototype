@@ -21,8 +21,10 @@
   },
   "homepage": "https://github.com/loomnetwork/Node.js-prototype#readme",
   "dependencies": {
+    "bip39": "^3.0.2",
     "commander": "^3.0.2",
     "ethereumjs-util": "^6.1.0",
+    "ethereumjs-wallet": "^0.6.3",
     "fs": "0.0.1-security",
     "keccak256": "^1.0.0",
     "loom-js": "^1.55.0",

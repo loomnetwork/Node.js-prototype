@@ -9,7 +9,7 @@ contract Prototype {
     bool isSet;
   }
   address public ADMIN;
-  event NewDataAdded(address signer, string pubKey, string str1, string str2, address addr, bytes32 hash);
+  event NewDataAdded(address approver, string pubKey, string str1, string str2, address addr, bytes32 hash);
   mapping (bytes32 => Data) myData;
 
   constructor(address _admin) public {
@@ -40,7 +40,6 @@ contract Prototype {
    }
 
   function recove(bytes32 _hash, bytes32 r, bytes32 s, uint8 v) public view returns (address sign, bytes32 oh, bytes32 or, bytes32 os, uint8 ov ) {
-    // hashx = keccak256(abi.encode('\x19Ethereum Signed Message:\n32', _hash));
     sign = ecrecover(_hash, v, r, s);
     oh = _hash;
     or = r;

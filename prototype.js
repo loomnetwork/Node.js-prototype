@@ -64,21 +64,11 @@ function loadAdminCredentials () {
 async function approve(pubKey, str1, str2, address) {
   const { account, web3js, client, privateKey } = await loadExtdevAccount()
   const prototypeContract = await getPrototypeContract(web3js)
-  console.log("account...",account);
-  
   const hash = buildHash(ethers, pubKey, str1, str2, address)
-  console.log("hash:", hash);
-  
   const { addr, ethPrivateKey } = loadAdminCredentials()
-
   const ethWallet = new ethers.Wallet(ethPrivateKey);
-  let addrs = await ethWallet.getAddress()
-  console.log("addrs", addrs);
-  
   const signature = await ethWallet.signMessage(hash);
   let signedHash = ethers.utils.hashMessage(hash)
-  console.log("signedHash",signedHash);
-  console.log('Signature: ' + signature)
   let r = signature.slice(0, 66)
   let s = '0x' + signature.slice(66, 130)
   let v = '0x' + signature.slice(130, 132)
@@ -90,7 +80,7 @@ async function approve(pubKey, str1, str2, address) {
       .approve(pubKey, str1, str2, address, signedHash, splitResults.r, splitResults.s, splitResults.v)
       .send({ from: account})
 
-    console.log('Admin address (Rinkeby): '+ tx.events.NewDataAdded.returnValues.signer)
+    console.log('Approver: '+ tx.events.NewDataAdded.returnValues.approver)
     console.log('PubKey: ' + tx.events.NewDataAdded.returnValues.pubKey)
     console.log('Str1: ' + tx.events.NewDataAdded.returnValues.str1)
     console.log('Str2: ' + tx.events.NewDataAdded.returnValues.str2)

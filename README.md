@@ -36,15 +36,15 @@ node prototype.js approve <publicKey> <str1> <str2> <address>
 
 Example:
 
-```
+```bash
 node prototype.js approve u1F3RvRvW9v4X/dIZSpbW6a+r5XZ2pgM9508l8T6AYI= str01 str02 0x653bcf82b202dbaac4fdcee8266fc7a93cb26539
---
-Signer address: 0x4d64761D2221dBc0E3dfd0aFE1A94d5f6f4Bd159
+hash: 0x297d23024f699496deebfb77181ff34f878a6e3172e98995976058ed43b4589d
+Approver: 0x4d64761D2221dBc0E3dfd0aFE1A94d5f6f4Bd159
 PubKey: u1F3RvRvW9v4X/dIZSpbW6a+r5XZ2pgM9508l8T6AYI=
 Str1: str01
 Str2: str02
 Address: 0x653bCF82B202dBAAc4fDCee8266fC7a93cB26539
-Hash: 89e50bd8ad3da87b3098ea03490e8f8608339575c7da8878f684697372e40629
+Hash: 0x7503ee571069b533155a8f9765419c90ca27e5c453487d6120e0ddd813048d88
 ```
 
 ## 6. Get data
@@ -56,10 +56,12 @@ node prototype.js getData <hash>
 Example:
 
 ```bash
-node prototype.js getData 89e50bd8ad3da87b3098ea03490e8f8608339575c7da8878f684697372e40629
---
+node prototype.js getData 0x7503ee571069b533155a8f9765419c90ca27e5c453487d6120e0ddd813048d88
+```
+
+```
 PubKey: u1F3RvRvW9v4X/dIZSpbW6a+r5XZ2pgM9508l8T6AYI=
 Str1: str01
 Str2: str02
-Address: 0x653bCF82B202dBAAc4fDCee8266fC7a93cB26539
+Address:0x653bCF82B202dBAAc4fDCee8266fC7a93cB26539
 ```
