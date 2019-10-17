@@ -9,25 +9,25 @@ contract Prototype {
     bool isSet;
   }
 
-  event NewDataAdded(address signer, string pubKey, string str1, string str2, address addr, string hash);
+  event NewDataAdded(address signer, string pubKey, string str1, string str2, address addr, bytes32 hash);
 
-  mapping (string => Data) myData;
+  mapping (bytes32 => Data) myData;
 
 
-  function approve (string memory _pubKey, string memory _str1, string memory _str2, address _addr, string memory _hash) public {
+  function approve (string memory _pubKey, string memory _str1, string memory _str2, address _addr, bytes32 _hash) public {
     require(myData[_hash].isSet == false, "Key already exists!");
     myData[_hash] = Data(_pubKey, _str1, _str2, _addr, true);
     emit NewDataAdded(msg.sender, _pubKey, _str1, _str2, _addr, _hash);
   }
 
-  function approve (string memory _pubKey, string memory _str1, string memory _str2, address _addr, string memory _hash, bytes32 r, bytes32 s, uint8 v, bytes32 signatureHash) public {
-    //require(ecrecover(signatureHash, v, r, s) == msg.sender, "Invalid signature");
+  function approve (string memory _pubKey, string memory _str1, string memory _str2, address _addr, bytes32 _hash, bytes32 r, bytes32 s, uint8 v) public {
+    // require(ecrecover(_hash, v, r, s) == msg.sender, "Invalid signature");
     require(myData[_hash].isSet == false, "Key already exists!");
     myData[_hash] = Data(_pubKey, _str1, _str2, _addr, true);
     emit NewDataAdded(msg.sender, _pubKey, _str1, _str2, _addr, _hash);
   }
 
-  function getData (string memory _hash) public view returns (string memory pubKey, string memory str1, string memory str2, address addr) {
+  function getData (bytes32 _hash) public view returns (string memory pubKey, string memory str1, string memory str2, address addr) {
     Data memory retVal;
     retVal = myData[_hash];
     pubKey = retVal.pubKey;
@@ -35,4 +35,8 @@ contract Prototype {
     str2 = retVal.str2;
     addr = retVal.addr;
    }
+
+  function recove(bytes32 _hash, bytes32 r, bytes32 s, uint8 v) public returns (address sign) {
+    sign = ecrecover(_hash, v, r, s);
+  }
 }

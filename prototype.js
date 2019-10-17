@@ -58,15 +58,18 @@ async function approve(pubKey, str1, str2, address) {
   const hash = buildHash(pubKey, str1, str2, address)
   const signature = await web3js.eth.sign(hash, account)
   console.log('Signature: ' + signature)
+  let r = signature.substr(0, 66)
+  let s = '0x' + signature.substr(66, 64)
+  let v = '0x' + signature.substr(130, 2)
 
-  r = signature.substr(0, 66)
-  s = '0x' + signature.substr(66, 64)
-  v = '0x' + signature.substr(130, 2)
-
-
+  console.log("account", account);
+  console.log("r", r);
+  console.log("s", s);
+  console.log("v", v);
+  
   try {
     const tx = await prototypeContract.methods
-      .approve(pubKey, str1, str2, address, hash, r, s, v, signature)
+      .approve(pubKey, str1, str2, address, hash, r, s, v)
       .send({ from: account})
 
     console.log('Signer address: '+ tx.events.NewDataAdded.returnValues.signer)
@@ -106,6 +109,25 @@ async function getData(hash) {
   }
 
 }
+
+async function recove(hash,r,s,v) {
+  const { account, web3js, client } = await loadExtdevAccount()
+  const prototypeContract = await getPrototypeContract(web3js)
+  try {
+    const tx = await prototypeContract.methods
+    .recove(hash,r,s,v)
+    .call({ from: account})
+    console.log("tx", tx);
+  } catch (err) {
+    console.log('Error encountered while retrieving data.')
+    throw (err)
+  } finally {
+    if (client) {
+      client.disconnect()
+    }
+  }
+
+}
 program
     .command('approve <pubKey> <str1> <str2> <address>')
     .description('Expects the following parameters: pubKey, str1, str2, address')
@@ -118,6 +140,13 @@ program
     .description('Expects the following parameters: hash')
     .action(async function (hash) {
       await getData(hash)
+    });
+
+    program
+    .command('recove <hash> <r> <s> <v>')
+    .description('Expects the following parameters: hash, r, s, v')
+    .action(async function (hash,r,s,v) {
+      await recove(hash,r,s,v)
     });
 
 
