@@ -39,6 +39,15 @@ async function loadExtdevAccount () {
     client
   }
 }
+
+ async function loadRinkebyAccount() {
+  const privateKey = fs.readFileSync(path.join(__dirname, './rinkeby-private-key'), 'utf-8')
+  const web3js = new Web3(`https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`)
+  const ownerAccount = web3js.eth.accounts.privateKeyToAccount('0x' + privateKey)
+  web3js.eth.accounts.wallet.add(ownerAccount)
+  return web3js
+}
+
 async function getPrototypeContract (web3js) {
   const networkId = await web3js.eth.net.getId()
   return new web3js.eth.Contract(
@@ -54,17 +63,18 @@ function buildHash(pubKey, str1, str2, address) {
 
 async function approve(pubKey, str1, str2, address) {
   const { account, web3js, client } = await loadExtdevAccount()
+  const rinkebyWeb3js = await loadRinkebyAccount()
   const prototypeContract = await getPrototypeContract(web3js)
   
   const keccak = buildHash(pubKey, str1, str2, address)
 
-  const result = await web3js.eth.sign(keccak, account)
-  const hash = soliditySha3('\x19Ethereum Signed Message:\n32', keccak).slice(2)
+  const result = await rinkebyWeb3js.eth.sign(keccak, account)
+  const hash = '0x' + soliditySha3('\x19Ethereum Signed Message:\n32', keccak).slice(2)
   const { r, s, v } = fromRpcSig(result)
 
   try {
     const tx = await prototypeContract.methods
-      .approve(pubKey, str1, str2, address, hash, r, s, v, '0x' + hash)
+      .approve(pubKey, str1, str2, address, keccak, r, s, v, hash)
       .send({ from: account})
     console.log(tx)
     console.log('Signer address: '+ tx.events.NewDataAdded.returnValues.signer)

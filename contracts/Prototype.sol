@@ -14,7 +14,8 @@ contract Prototype {
   mapping (string => Data) myData;
 
   function approve (string memory _pubKey, string memory _str1, string memory _str2, address _addr, string memory _hash, bytes32 r, bytes32 s, uint8 v, bytes32 _signatureHash) public {
-    require(ecrecover(_signatureHash, v, r, s) == msg.sender, "Invalid signature");
+    //require(ecrecover(_signatureHash, v, r, s) == msg.sender, "Invalid signature");
+    require(keccack256(abiEncodePacked(_hash)) == _signatureHash);
     require(myData[_hash].isSet == false, "Key already exists!");
     myData[_hash] = Data(_pubKey, _str1, _str2, _addr, true);
     emit NewDataAdded(msg.sender, _pubKey, _str1, _str2, _addr, _hash);
