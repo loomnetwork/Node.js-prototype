@@ -7,7 +7,8 @@ module.exports = function (deployer, network, accounts) {
   }
 
   deployer.then(async () => {
-    await deployer.deploy(Prototype)
+    let adminAddress = '0xC4247A24E4356FA34475799d9e64719e5307146c'
+    await deployer.deploy(Prototype, adminAddress)
     const prototypeInstance = await Prototype.deployed()
 
     console.log('\n*************************************************************************\n')

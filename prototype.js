@@ -3,7 +3,8 @@ const fs = require('fs')
 const path = require('path')
 const Web3 = require('web3')
 const keccak256 = require('keccak256')
-const { fromRpcSig } = require('ethereumjs-util')
+const ethers = require('ethers')
+
 const {
   Client,
   NonceTxMiddleware,
@@ -11,7 +12,6 @@ const {
   LocalAddress,
   CryptoUtils,
   LoomProvider,
-  soliditySha3
 } = require('loom-js')
 
 const PrototypeContractjJSON = require('./build/contracts/Prototype.json')
@@ -30,24 +30,19 @@ async function loadExtdevAccount () {
     new NonceTxMiddleware(publicKey, client),
     new SignedTxMiddleware(privateKey)
   ]
+  
   client.on('error', msg => {
     console.error('PlasmaChain connection error', msg)
   })
+  let pk = CryptoUtils.bytesToHex(privateKey)
+
+
   return {
     account: LocalAddress.fromPublicKey(publicKey).toString(),
     web3js: new Web3(new LoomProvider(client, privateKey)),
-    client
+    client,
   }
 }
-
- async function loadRinkebyAccount() {
-  const privateKey = fs.readFileSync(path.join(__dirname, './rinkeby-private-key'), 'utf-8')
-  const web3js = new Web3(`https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`)
-  const ownerAccount = web3js.eth.accounts.privateKeyToAccount('0x' + privateKey)
-  web3js.eth.accounts.wallet.add(ownerAccount)
-  return web3js
-}
-
 async function getPrototypeContract (web3js) {
   const networkId = await web3js.eth.net.getId()
   return new web3js.eth.Contract(
@@ -56,27 +51,40 @@ async function getPrototypeContract (web3js) {
   )
 }
 
-function buildHash(pubKey, str1, str2, address) {
-  const buffer = pubKey + str1 + str2 + address
-  return keccak256(buffer).toString('hex')
+function buildHash(ethers, pubKey, str1, str2, address) {
+  let result = ethers.utils.solidityKeccak256([ 'string', 'string', 'string', 'address' ], [ pubKey, str1, str2, address ]);
+  return result
 }
 
 async function approve(pubKey, str1, str2, address) {
-  const { account, web3js, client } = await loadExtdevAccount()
-  const rinkebyWeb3js = await loadRinkebyAccount()
+  const { account, web3js, client, privateKey } = await loadExtdevAccount()
   const prototypeContract = await getPrototypeContract(web3js)
+  console.log("account...",account);
   
-  const keccak = buildHash(pubKey, str1, str2, address)
+  const hash = buildHash(ethers, pubKey, str1, str2, address)
+  console.log("hash:", hash);
+  
+  let addr = '0xC4247A24E4356FA34475799d9e64719e5307146c'
+  let ethPrivateKey = '0xA6E4AF5B2B8323E965876D94D9CE635723A8A7193E61000D241CDDEAA613F3E4'
+  const ethWallet = new ethers.Wallet(ethPrivateKey);
+  let addrs = await ethWallet.getAddress()
+  console.log("addrs", addrs);
+  
+  const signature = await ethWallet.signMessage(hash);
+  let signedHash = ethers.utils.hashMessage(hash)
+  console.log("signedHash",signedHash);
+  console.log('Signature: ' + signature)
+  let r = signature.slice(0, 66)
+  let s = '0x' + signature.slice(66, 130)
+  let v = '0x' + signature.slice(130, 132)
 
-  const result = await rinkebyWeb3js.eth.sign(keccak, account)
-  const hash = '0x' + soliditySha3('\x19Ethereum Signed Message:\n32', keccak).slice(2)
-  const { r, s, v } = fromRpcSig(result)
-
+  let splitResults = ethers.utils.splitSignature(signature)
+  
   try {
     const tx = await prototypeContract.methods
-      .approve(pubKey, str1, str2, address, keccak, r, s, v, hash)
+      .approve(pubKey, str1, str2, address, signedHash, splitResults.r, splitResults.s, splitResults.v)
       .send({ from: account})
-    console.log(tx)
+
     console.log('Signer address: '+ tx.events.NewDataAdded.returnValues.signer)
     console.log('PubKey: ' + tx.events.NewDataAdded.returnValues.pubKey)
     console.log('Str1: ' + tx.events.NewDataAdded.returnValues.str1)
@@ -93,25 +101,6 @@ async function approve(pubKey, str1, str2, address) {
   }
 }
 
-async function recover(hash,r,s,v) {
-  const { account, web3js, client } = await loadExtdevAccount()
-  const prototypeContract = await getPrototypeContract(web3js)
-  try {
-    const tx = await prototypeContract.methods
-    .recove(hash,r,s,v)
-    .call({ from: account})
-    console.log("tx", tx);
-  } catch (err) {
-    console.log('Error encountered while retrieving data.')
-    throw (err)
-  } finally {
-    if (client) {
-      client.disconnect()
-    }
-  }
-
-}
-
 async function getData(hash) {
   const { account, web3js, client } = await loadExtdevAccount()
   const prototypeContract = await getPrototypeContract(web3js)
@@ -123,6 +112,25 @@ async function getData(hash) {
     console.log('Str1: ' + tx.str1)
     console.log('Str2: ' + tx.str2)
     console.log('Address:' + tx.addr)
+  } catch (err) {
+    console.log('Error encountered while retrieving data.')
+    throw (err)
+  } finally {
+    if (client) {
+      client.disconnect()
+    }
+  }
+
+}
+
+async function recove(hash,r,s,v) {
+  const { account, web3js, client } = await loadExtdevAccount()
+  const prototypeContract = await getPrototypeContract(web3js)
+  try {
+    const tx = await prototypeContract.methods
+    .recove(hash,r,s,v)
+    .call({ from: account})
+    return tx
   } catch (err) {
     console.log('Error encountered while retrieving data.')
     throw (err)
@@ -147,11 +155,12 @@ program
       await getData(hash)
     });
 
-program
-  .command('recove <hash> <r> <s> <v>')
-  .description('Expects the following parameters: hash, r, s, v')
-  .action(async function (hash,r,s,v) {
-    await recover(hash,r,s,v)
-});
+    program
+    .command('recove <hash> <r> <s> <v>')
+    .description('Expects the following parameters: hash, r, s, v')
+    .action(async function (hash,r,s,v) {
+      await recove(hash,r,s,v)
+    });
+
 
 program.parse(process.argv);
