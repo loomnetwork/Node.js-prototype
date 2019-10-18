@@ -13,22 +13,28 @@ npm install
 npm run gen-keys:deployer
 ```
 
-## 3. Setup the admin account
+## 3. Generate the keys for the user account on Loom
 
-* 3.1 Save your Rinkeby private key into the `rinkeby-private-key` file.
+```bash
+npm run gen-keys:signer
+```
 
-* 3.2 Save your Rinkeby address into the `rinkeby-account` file
+## 4. Setup the admin account
 
-* 3.3 Update `adminAddress` in `./migrations/2_prototype.js` to match the address saved into the `rinkeby-account` file.
+* 4.1 Save your Rinkeby private key into the `rinkeby-private-key` file.
 
-## 4. Deploy the contract
+* 4.2 Save your Rinkeby address into the `rinkeby-account` file
+
+* 4.3 Update `adminAddress` in `./migrations/2_prototype.js` to match the address saved into the `rinkeby-account` file.
+
+## 5. Deploy the contract
 
 ```bash
 npm run migrate:testnet
 ```
 
 
-## 5. Call approve
+## 6. Call approve
 
 ```bash
 node prototype.js approve <publicKey> <str1> <str2> <address>
@@ -47,7 +53,7 @@ Address: 0x653bCF82B202dBAAc4fDCee8266fC7a93cB26539
 Hash: 0x7503ee571069b533155a8f9765419c90ca27e5c453487d6120e0ddd813048d88
 ```
 
-## 6. Get data
+## 7. Get data
 
 ```bash
 node prototype.js getData <hash>
