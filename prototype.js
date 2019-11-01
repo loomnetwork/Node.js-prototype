@@ -85,6 +85,8 @@ async function approve(pubKey, str1, str2, address) {
     console.log('Str2: ' + tx.events.NewDataAdded.returnValues.str2)
     console.log('Address: ' + tx.events.NewDataAdded.returnValues.addr)
     console.log('Hash: ' + tx.events.NewDataAdded.returnValues.hash)
+    console.log('TxHash: ' + tx.transactionHash)
+    console.log('BlockNumber: ' + tx.blockNumber)
   } catch (err) {
     console.log('Error encountered while saving data.')
     throw (err)
